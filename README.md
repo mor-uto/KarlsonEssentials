@@ -8,3 +8,7 @@
 *only works if graphics mode is set to fast!*
 - disables lights from lamps
 - removes the bloom effect in doorFrames and some weapons
+
+## Configuration
+
+all features are togglable from the config file `BepInEx\config\me.moruto.karlson.MoreFps.cfg`
