@@ -4,8 +4,11 @@
 2. Put the plugin in your BepInEx plugins folder
 
 ## Features
+- Custom resolution
+- Windowed Mode
+- Disabling some particle effects
 
-*only works if graphics mode is set to fast!*
+*the following only works if graphics mode is set to fast!*
 - Removes lights from ceiling lamps
 - Removes the bloom effect in Door-frames and some weapons
 
