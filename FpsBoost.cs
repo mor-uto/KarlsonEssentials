@@ -1,28 +1,41 @@
-using UnityEngine.SceneManagement;
-using UnityEngine;
+using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
+using HarmonyLib;
 
-namespace MoreFps {
-    internal class FpsBoost {
-        private Plugin plugin;
-        public FpsBoost(Plugin plugin) {
-            this.plugin = plugin;
-            SceneManager.sceneLoaded += SceneLoadEvent;
-        }
+[BepInProcess("Karlson.exe")]
+[BepInPlugin("me.moruto.plugins.karlsonessentials", "KarlsonEssentials", "1.0")]
+public class Plugin : BaseUnityPlugin {
+    public static new ManualLogSource Logger;
 
-        public void Update() {
-            string[] resolutionVals = plugin.CustomResolution.Value.Split('x');
-            if (Screen.currentResolution.width.ToString() == resolutionVals[0] && Screen.currentResolution.height.ToString() == resolutionVals[1]) return;
-            Screen.SetResolution(int.Parse(resolutionVals[0]), int.Parse(resolutionVals[1]), plugin.isFullscreen.Value);
-        }
+    private FpsBoost fpsBoost;
 
-        private void SceneLoadEvent(Scene scene, LoadSceneMode mode) {
-            foreach (GameObject obj in scene.GetRootGameObjects()) {
-                if (obj.name == "Camera") if (plugin.NoPlayerSpeedlines.Value) GameObject.Destroy(obj.GetComponentInChildren<ParticleSystem>());
+    //Config
+    public ConfigEntry<bool> disableBloom;
+    public ConfigEntry<bool> disableLights;
+    public ConfigEntry<string> CustomResolution;
+    public ConfigEntry<bool> isFullscreen;
+    public ConfigEntry<bool> NoPlayerSpeedlines;
 
-                if (GameState.Instance.GetGraphics() == true) return;
-                if (obj.name.ToLower() == "bloom") if (plugin.disableBloom.Value) GameObject.Destroy(obj);
-                if (plugin.disableLights.Value) if (obj.GetComponentsInChildren<Light>() != null) foreach (Light light in obj.GetComponentsInChildren<Light>()) { GameObject.Destroy(light); }
-            }
-        }
+    private void Awake() {
+        Logger = base.Logger;
+        Logger.LogInfo($"Plugin KarlsonMod has been loaded!");
+        new Harmony("me.moruto.karlsonessentials").PatchAll();
+        initConfig();
+        fpsBoost = new FpsBoost(this);
+    }
+
+    public void Update() {
+        fpsBoost.Update();
+    }
+
+    private void initConfig() {
+        disableBloom = Config.Bind("Lighting", "DisableBloom", true, "Toggle the Bloom (glowing lights) from doorFrames, lamps, weapons, etc...");
+        disableLights = Config.Bind("Lighting", "DisableLights", true, "Toggle the lights from any lamp or light source");
+        
+        CustomResolution = Config.Bind("Resolution", "Resolution", "1920x1080", "Change the resolution of the game");
+        isFullscreen = Config.Bind("Resolution", "isFullscreen", true, "Make the game window fullscreen or not");
+        
+        NoPlayerSpeedlines = Config.Bind("Particles", "NoPlayerSpeedlines", false, "Toggle the player's speed lines");
     }
 }
