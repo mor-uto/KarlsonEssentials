@@ -17,7 +17,8 @@ Note: **i recommend u delete and re-configure the config every 1-2 updates only 
 all features are togglable from the config file `BepInEx\config\me.moruto.karlson.MoreFps.cfg`
 
 ## Bug fixes
-- moving around your camera after you win/lose/pause a game
+- Moving around your camera after you win/lose/pause a game
+- Game music would play on startup even if its off
 
 ## Contributing
 
