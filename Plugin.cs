@@ -1,27 +1,30 @@
 using BepInEx;
 using BepInEx.Configuration;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+using HarmonyLib;
 
 namespace MoreFps {
-    [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
+    [BepInPlugin("me.moruto.karlson.morefps", "MoreFps", "1.0.1")]
     internal class Plugin : BaseUnityPlugin {
-        public const string pluginGuid = "me.moruto.karlson.morefps";
-        public const string pluginName = "MoreFps";
-        public const string pluginVersion = "1.0.1";
+        public ConfigEntry<bool> disableBloom;
+        public ConfigEntry<bool> disableLights;
+        public ConfigEntry<string> CustomResolution;
+        public ConfigEntry<bool> isFullscreen;
+        public ConfigEntry<bool> NoPlayerSpeedlines;
 
-        private ConfigEntry<bool> disableBloom;
-        private ConfigEntry<bool> disableLights;
-
-        private ConfigEntry<string> CustomResolution;
-        private ConfigEntry<bool> isFullscreen;
-
-        private ConfigEntry<bool> NoPlayerSpeedlines;
+        private FpsBoost fpsBoost;
 
         public void Awake() {
             Logger.LogInfo("MoreFps by Moruto loaded!");
-            SceneManager.sceneLoaded += SceneLoadEvent;
+            InitConfig();
+            new Harmony("me.moruto.karlson").PatchAll();
+            fpsBoost = new FpsBoost(this);
+        }
 
+        public void Update() {
+            fpsBoost.Update();
+        }
+
+        private void InitConfig() {
             disableBloom = Config.Bind("Lighting", "DisableBloom", true, "Toggle the Bloom (glowing lights) from doorFrames, lamps, weapons, etc...");
             disableLights = Config.Bind("Lighting", "DisableLights", true, "Toggle the lights from any lamp or light source");
 
@@ -29,24 +32,6 @@ namespace MoreFps {
             isFullscreen = Config.Bind("Resolution", "isFullscreen", true, "Make the game window fullscreen or not");
 
             NoPlayerSpeedlines = Config.Bind("Particles", "NoPlayerSpeedlines", false, "Toggle the player's speed lines");
-        }
-
-        public void Update() {
-            string[] resolutionVals = CustomResolution.Value.Split('x');
-            if (Screen.currentResolution.width.ToString() == resolutionVals[0] && Screen.currentResolution.height.ToString() == resolutionVals[1]) return;
-
-            Screen.SetResolution(int.Parse(resolutionVals[0]), int.Parse(resolutionVals[1]), isFullscreen.Value);
-        }
-
-        private void SceneLoadEvent(Scene scene, LoadSceneMode mode) {
-            foreach (GameObject obj in scene.GetRootGameObjects()) {
-
-                if (obj.name == "Camera") if (NoPlayerSpeedlines.Value) Destroy(obj.GetComponentInChildren<ParticleSystem>());
-
-                if (GameState.Instance.GetGraphics() == true) return;
-                if (obj.name.ToLower() == "bloom") if (disableBloom.Value) Destroy(obj);
-                if (disableLights.Value) if (obj.GetComponentsInChildren<Light>() != null) foreach (Light light in obj.GetComponentsInChildren<Light>()) { Destroy(light); }
-            }
         }
     }
 }
