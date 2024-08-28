@@ -1,41 +1,42 @@
-using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
-using HarmonyLib;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
-[BepInProcess("Karlson.exe")]
-[BepInPlugin("me.moruto.plugins.karlsonessentials", "KarlsonEssentials", "1.0")]
-public class Plugin : BaseUnityPlugin {
-    public static new ManualLogSource Logger;
-
-    private FpsBoost fpsBoost;
-
-    //Config
-    public ConfigEntry<bool> disableBloom;
-    public ConfigEntry<bool> disableLights;
-    public ConfigEntry<string> CustomResolution;
-    public ConfigEntry<bool> isFullscreen;
-    public ConfigEntry<bool> NoPlayerSpeedlines;
-
-    private void Awake() {
-        Logger = base.Logger;
-        Logger.LogInfo($"Plugin KarlsonMod has been loaded!");
-        new Harmony("me.moruto.karlsonessentials").PatchAll();
-        initConfig();
-        fpsBoost = new FpsBoost(this);
+internal class FpsBoost {
+    public FpsBoost() {
+        SceneManager.sceneLoaded += SceneLoadEvent;
     }
 
     public void Update() {
-        fpsBoost.Update();
+        string[] resolutionVals = Plugin.CustomResolution.Value.Split('x');
+        if (Screen.currentResolution.width.ToString() == resolutionVals[0] && Screen.currentResolution.height.ToString() == resolutionVals[1]) return;
+        Screen.SetResolution(int.Parse(resolutionVals[0]), int.Parse(resolutionVals[1]), !Plugin.isWindowed.Value);
     }
 
-    private void initConfig() {
-        disableBloom = Config.Bind("Lighting", "DisableBloom", true, "Toggle the Bloom (glowing lights) from doorFrames, lamps, weapons, etc...");
-        disableLights = Config.Bind("Lighting", "DisableLights", true, "Toggle the lights from any lamp or light source");
-        
-        CustomResolution = Config.Bind("Resolution", "Resolution", "1920x1080", "Change the resolution of the game");
-        isFullscreen = Config.Bind("Resolution", "isFullscreen", true, "Make the game window fullscreen or not");
-        
-        NoPlayerSpeedlines = Config.Bind("Particles", "NoPlayerSpeedlines", false, "Toggle the player's speed lines");
+     private void SceneLoadEvent(Scene scene, LoadSceneMode mode) {
+        foreach (GameObject obj in scene.GetRootGameObjects()) {
+            if (obj.name == "Camera") if (Plugin.NoPlayerSpeedlines.Value) UnityEngine.Object.Destroy(obj.GetComponentInChildren<ParticleSystem>());
+
+            if (Plugin.NoJumpPadEffect.Value && obj.name == "World") {
+                foreach (Transform child in obj.transform) {
+                    if (child.name.Contains("JumpPad")) {
+                        foreach (Transform grandchild in child) {
+                            if (grandchild.name.Contains("Effect") && grandchild.GetComponent<ParticleSystem>() != null) {
+                                GameObject.Destroy(grandchild.gameObject);
+                            }
+
+                            if (!Plugin.removeJumpPadAnimation.Value) continue;
+                            Animator animator = grandchild.GetComponent<Animator>();
+                            if (animator != null) GameObject.Destroy(animator);
+                        }
+                    }
+                }
+            }
+
+
+            if (GameState.Instance.GetGraphics() == true) return;
+
+            if (obj.name.ToLower() == "bloom") if (Plugin.disableBloom.Value) UnityEngine.Object.Destroy(obj);
+            if (Plugin.disableLights.Value) if (obj.GetComponentsInChildren<Light>() != null) foreach (Light light in obj.GetComponentsInChildren<Light>()) { UnityEngine.Object.Destroy(light); }
+        }
     }
 }
