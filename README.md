@@ -16,13 +16,10 @@
 - Custom resolution
 - Windowed Mode
 
-*the following only works if graphics mode is set to fast!*
-
+**Bug fixes**
+- Moving around your camera after you win/lose/pause a game
+- Game music would play on startup even if its muted
 
 ## Configuration
 Note: **i recommend u delete and re-configure the config every 1-2 updates only IF the new config is different from the old one**
 all features are togglable from the config file `BepInEx\config\me.moruto.karlson.karlsoneksentials.cfg`
-
-## Bug fixes
-- Moving around your camera after you win/lose/pause a game
-- Game music would play on startup even if its muted
