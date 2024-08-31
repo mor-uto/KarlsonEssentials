@@ -6,15 +6,20 @@
 ## Features
 
 **Graphics**
-- Removes lights from ceiling lamps
-- Removes the bloom effect in Door-frames and some weapons
+- Remove lights from ceiling lamps
+- Remove the bloom effect in Door-frames and some weapons
+- Remove Reflections
 
 - **Particles**
-- Disabling the player's speed lines particles
+- Disable the player's speed lines particles
+- Disable the jump pad's animation
 
 **Window**
 - Custom resolution
 - Windowed Mode
+
+**Misc**
+- Disable the jump pad's animation
 
 **Bug fixes**
 - Moving around your camera after you win/lose/pause a game
