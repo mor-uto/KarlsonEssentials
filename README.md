@@ -10,7 +10,7 @@
 - Remove the bloom effect in Door-frames and some weapons
 - Remove Reflections
 
-- **Particles**
+**Particles**
 - Disable the player's speed lines particles
 - Disable the jump pad's animation
 
